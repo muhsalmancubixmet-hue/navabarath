@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navabharath Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 flex h-screen font-sans relative overflow-hidden">
+
+    <!-- Mobile Drawer Backdrop -->
+    <div id="mobile-drawer-backdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 hidden transition-opacity duration-200"></div>
+
+    <!-- Mobile Drawer -->
+    <div id="mobile-drawer" class="fixed inset-y-0 left-0 w-64 bg-slate-900 text-white z-50 transform -translate-x-full transition-transform duration-200 ease-in-out flex flex-col justify-between p-5 md:hidden">
+        <div class="flex flex-col h-full justify-between">
+            <div class="overflow-y-auto">
+                <div class="flex justify-between items-center border-b border-slate-700 pb-3 mb-6">
+                    <h1 class="text-xl font-bold tracking-wider">NAVABHARATH</h1>
+                    <button id="close-drawer" class="text-slate-400 hover:text-white focus:outline-none">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <nav class="space-y-6">
+                    <!-- Category 1: Content & Info -->
+                    {% if request.user.is_superuser or request.user.staff_permission.has_content_info %}
+                    <div>
+                        <span class="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Content & Info</span>
+                        <div class="space-y-1">
+                            <a href="{% url 'hero_list' %}" class="block py-2 px-4 rounded text-sm transition duration-200 {% if 'hero' in request.resolver_match.url_name %}bg-slate-800 text-white font-medium{% else %}text-slate-400 hover:text-white hover:bg-slate-800{% endif %}">Hero Section</a>
+                            <a href="{% url 'testimonial_list' %}" class="block py-2 px-4 rounded text-sm transition duration-200 {% if 'testimonial' in request.resolver_match.url_name %}bg-slate-800 text-white font-medium{% else %}text-slate-400 hover:text-white hover:bg-slate-800{% endif %}">Testimonials</a>                
+                            <a href="{% url 'faq_list' %}" class="block py-2 px-4 rounded text-sm transition duration-200 {% if 'faq' in request.resolver_match.url_name %}bg-slate-800 text-white font-medium{% else %}text-slate-400 hover:text-white hover:bg-slate-800{% endif %}">FAQs</a>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Category 2: Campaigns -->
+                    {% if request.user.is_superuser or request.user.staff_permission.has_campaigns %}
+                    <div>
+                        <span class="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Campaigns</span>
+                        <div class="space-y-1">
+                            <a href="{% url 'campaign_list' %}" class="block py-2 px-4 rounded text-sm transition duration-200 {% if 'campaign' in request.resolver_match.url_name %}bg-slate-800 text-white font-medium{% else %}text-slate-400 hover:text-white hover:bg-slate-800{% endif %}">Campaigns</a>
+                            <a href="{% url 'category_list' %}" class="block py-2 px-4 rounded text-sm transition duration-200 {% if 'category' in request.resolver_match.url_name %}bg-slate-800 text-white font-medium{% else %}text-slate-400 hover:text-white hover:bg-slate-800{% endif %}">Categories</a>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Category 2.5: Honors Program -->
+                    {% if request.user.is_superuser or request.user.staff_permission.has_honors_program %}
+                    <div>
+                        <span class="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Honors Program</span>
+                        <div class="space-y-1">
+                            <a href="{% url 'certificate_list' %}" class="block py-2 px-4 rounded text-sm transition duration-200 {% if 'certificate' in request.resolver_match.url_name or 'submission' in request.resolver_match.url_name %}bg-slate-800 text-white font-medium{% else %}text-slate-400 hover:text-white hover:bg-slate-800{% endif %}">Honors Program</a>
+                            <a href="{% url 'honors_category_list' %}" class="block py-2 px-4 rounded text-sm transition duration-200 {% if 'honors_category' in request.resolver_match.url_name %}bg-slate-800 text-white font-medium{% else %}text-slate-400 hover:text-white hover:bg-slate-800{% endif %}">Honors Categories</a>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Category 3: System & Security -->
+                    {% if request.user.is_superuser or request.user.staff_permission.has_system_security %}
+                    <div>
+                        <span class="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">System & Security</span>
+                        <div class="space-y-1">
+                            <a href="{% url 'staff_list' %}" class="block py-2 px-4 rounded text-sm transition duration-200 {% if 'staff' in request.resolver_match.url_name %}bg-slate-800 text-white font-medium{% else %}text-slate-400 hover:text-white hover:bg-slate-800{% endif %}">Staff Directory</a>
+                            <a href="{% url 'activity_logs' %}" class="block py-2 px-4 rounded text-sm transition duration-200 {% if request.resolver_match.url_name == 'activity_logs' %}bg-slate-800 text-white font-medium{% else %}text-slate-400 hover:text-white hover:bg-slate-800{% endif %}">Activity Logs</a>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="pt-2">
+                        <a href="{% url 'logout' %}" class="block py-2 px-4 rounded text-sm text-red-400 hover:text-red-300 hover:bg-slate-800 transition duration-200">Logout</a>
+                    </div>
+                </nav>
+            </div>
+            <div class="border-t border-slate-700 pt-4 text-xs text-slate-500">
+                v1.0 Backend Driven
+            </div>
+        </div>
+    </div>
+
+    <!-- Desktop Sidebar -->
+    <div class="w-64 bg-slate-900 text-white flex flex-col justify-between hidden md:flex flex-shrink-0">
+        <div class="p-5">
+            <h1 class="text-xl font-bold tracking-wider border-b border-slate-700 pb-3 mb-6">NAVABHARATH</h1>
+            <nav class="space-y-6">
+                <!-- Category 1: Content & Info -->
+                {% if request.user.is_superuser or request.user.staff_permission.has_content_info %}
+                <div>
+                    <span class="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Content & Info</span>
+                    <div class="space-y-1">
+                        <a href="{% url 'hero_list' %}" class="block py-2 px-4 rounded text-sm transition duration-200 {% if 'hero' in request.resolver_match.url_name %}bg-slate-800 text-white font-medium{% else %}text-slate-400 hover:text-white hover:bg-slate-800{% endif %}">Hero Section</a>
+                        <a href="{% url 'testimonial_list' %}" class="block py-2 px-4 rounded text-sm transition duration-200 {% if 'testimonial' in request.resolver_match.url_name %}bg-slate-800 text-white font-medium{% else %}text-slate-400 hover:text-white hover:bg-slate-800{% endif %}">Testimonials</a>                
+                        <a href="{% url 'faq_list' %}" class="block py-2 px-4 rounded text-sm transition duration-200 {% if 'faq' in request.resolver_match.url_name %}bg-slate-800 text-white font-medium{% else %}text-slate-400 hover:text-white hover:bg-slate-800{% endif %}">FAQs</a>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Category 2: Campaigns -->
+                {% if request.user.is_superuser or request.user.staff_permission.has_campaigns %}
+                <div>
+                    <span class="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Campaigns</span>
+                    <div class="space-y-1">
+                        <a href="{% url 'campaign_list' %}" class="block py-2 px-4 rounded text-sm transition duration-200 {% if 'campaign' in request.resolver_match.url_name %}bg-slate-800 text-white font-medium{% else %}text-slate-400 hover:text-white hover:bg-slate-800{% endif %}">Campaigns</a>
+                        <a href="{% url 'category_list' %}" class="block py-2 px-4 rounded text-sm transition duration-200 {% if 'category' in request.resolver_match.url_name %}bg-slate-800 text-white font-medium{% else %}text-slate-400 hover:text-white hover:bg-slate-800{% endif %}">Categories</a>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Category 2.5: Honors Program -->
+                {% if request.user.is_superuser or request.user.staff_permission.has_honors_program %}
+                <div>
+                    <span class="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">Honors Program</span>
+                    <div class="space-y-1">
+                        <a href="{% url 'certificate_list' %}" class="block py-2 px-4 rounded text-sm transition duration-200 {% if 'certificate' in request.resolver_match.url_name or 'submission' in request.resolver_match.url_name %}bg-slate-800 text-white font-medium{% else %}text-slate-400 hover:text-white hover:bg-slate-800{% endif %}">Honors Program</a>
+                        <a href="{% url 'honors_category_list' %}" class="block py-2 px-4 rounded text-sm transition duration-200 {% if 'honors_category' in request.resolver_match.url_name %}bg-slate-800 text-white font-medium{% else %}text-slate-400 hover:text-white hover:bg-slate-800{% endif %}">Honors Categories</a>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Category 3: System & Security -->
+                {% if request.user.is_superuser or request.user.staff_permission.has_system_security %}
+                <div>
+                    <span class="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">System & Security</span>
+                    <div class="space-y-1">
+                        <a href="{% url 'staff_list' %}" class="block py-2 px-4 rounded text-sm transition duration-200 {% if 'staff' in request.resolver_match.url_name %}bg-slate-800 text-white font-medium{% else %}text-slate-400 hover:text-white hover:bg-slate-800{% endif %}">Staff Directory</a>
+                        <a href="{% url 'activity_logs' %}" class="block py-2 px-4 rounded text-sm transition duration-200 {% if request.resolver_match.url_name == 'activity_logs' %}bg-slate-800 text-white font-medium{% else %}text-slate-400 hover:text-white hover:bg-slate-800{% endif %}">Activity Logs</a>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="pt-2">
+                    <a href="{% url 'logout' %}" class="block py-2 px-4 rounded text-sm text-red-400 hover:text-red-300 hover:bg-slate-800 transition duration-200 mt-2">Logout</a>
+                </div>
+            </nav>
+        </div>
+        <div class="p-5 border-t border-slate-700 text-xs text-slate-500">
+            v1.0 Backend Driven
+        </div>
+    </div>
+
+    <div class="flex-1 flex flex-col overflow-hidden bg-white">
+        <header class="flex justify-between items-center py-4 px-4 sm:px-6 bg-white border-b border-gray-200">
+            <div class="flex items-center space-x-3">
+                <!-- Mobile Open Menu Button -->
+                <button id="open-drawer" class="text-slate-600 hover:text-slate-800 focus:outline-none md:hidden" aria-label="Open menu">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+                <h2 class="text-xl sm:text-2xl font-semibold text-slate-800">{% block page_title %}Dashboard{% endblock %}</h2>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span class="text-xs sm:text-sm text-slate-600 font-medium whitespace-nowrap">Admin Mode</span>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-x-hidden overflow-y-auto bg-slate-50 p-4 sm:p-6">
+            {% if messages %}
+                <div class="max-w-6xl mx-auto mb-6 space-y-2">
+                    {% for message in messages %}
+                        <div class="p-4 rounded-lg text-sm border {% if message.tags == 'success' %}bg-emerald-50 text-emerald-800 border-emerald-200{% elif message.tags == 'error' %}bg-red-50 text-red-800 border-red-200{% else %}bg-blue-50 text-blue-800 border-blue-200{% endif %} shadow-sm">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% block content %}
+            {% endblock %}
+        </main>
+    </div>
+
+    <script>
+        const openDrawerBtn = document.getElementById('open-drawer');
+        const closeDrawerBtn = document.getElementById('close-drawer');
+        const mobileDrawer = document.getElementById('mobile-drawer');
+        const mobileDrawerBackdrop = document.getElementById('mobile-drawer-backdrop');
+
+        function toggleDrawer(open) {
+            if (open) {
+                mobileDrawer.classList.remove('-translate-x-full');
+                mobileDrawer.classList.add('translate-x-0');
+                mobileDrawerBackdrop.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            } else {
+                mobileDrawer.classList.add('-translate-x-full');
+                mobileDrawer.classList.remove('translate-x-0');
+                mobileDrawerBackdrop.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            }
+        }
+
+        if (openDrawerBtn && closeDrawerBtn && mobileDrawer && mobileDrawerBackdrop) {
+            openDrawerBtn.addEventListener('click', () => toggleDrawer(true));
+            closeDrawerBtn.addEventListener('click', () => toggleDrawer(false));
+            mobileDrawerBackdrop.addEventListener('click', () => toggleDrawer(false));
+        }
+    </script>
+</body>
+</html>

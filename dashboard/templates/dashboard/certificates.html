@@ -1,0 +1,122 @@
+{% extends 'dashboard/base.html' %}
+
+{% block page_title %}Honorable Certificates & Submissions{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-6">
+    
+    <!-- Top Header Banner -->
+    <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+        <div>
+            <h3 class="text-lg font-bold text-slate-800">Honorable Credentials</h3>
+            <p class="text-sm text-gray-500">Manage credentials and review submissions for platform honors.</p>
+        </div>
+        <a href="{% url 'certificate_add' %}" class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800 transition shadow-sm">
+            + New Project
+        </a>
+    </div>
+
+    <!-- Search & Date Filters for Certificates -->
+    <form method="GET" class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col lg:flex-row gap-4 items-center justify-between">
+        <div class="w-full lg:w-1/4 relative">
+            <input type="text" name="search" value="{{ search_query }}" placeholder="Search by name, code, reason..." class="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-slate-800 text-sm">
+        </div>
+        
+        <div class="flex flex-wrap lg:flex-nowrap gap-3 w-full lg:w-auto items-stretch lg:items-center justify-end">
+            <!-- Primary & Secondary Categories Filter -->
+            <select name="primary_category" class="px-3 py-2 border border-gray-300 rounded-lg bg-white outline-none focus:ring-2 focus:ring-slate-800 text-xs w-full sm:w-auto">
+                <option value="">All Primary Honors</option>
+                {% for cat in primary_categories %}
+                    <option value="{{ cat.id }}" {% if primary_filter == cat.id|stringformat:"i" %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+            
+            <select name="secondary_category" class="px-3 py-2 border border-gray-300 rounded-lg bg-white outline-none focus:ring-2 focus:ring-slate-800 text-xs w-full sm:w-auto">
+                <option value="">All Secondary Honors</option>
+                {% for cat in secondary_categories %}
+                    <option value="{{ cat.id }}" {% if secondary_filter == cat.id|stringformat:"i" %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+
+            <div class="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2 w-full sm:w-auto">
+                <span class="text-xs text-slate-500 font-semibold whitespace-nowrap">From:</span>
+                <input type="date" name="start_date" value="{{ start_date }}" class="px-3 py-1.5 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-slate-800 text-sm w-full sm:w-auto">
+            </div>
+            <div class="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2 w-full sm:w-auto">
+                <span class="text-xs text-slate-500 font-semibold whitespace-nowrap">To:</span>
+                <input type="date" name="end_date" value="{{ end_date }}" class="px-3 py-1.5 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-slate-800 text-sm w-full sm:w-auto">
+            </div>
+            
+            <div class="flex space-x-2 w-full sm:w-auto justify-end">
+                <button type="submit" class="bg-slate-900 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-slate-800 transition">Filter</button>
+                <a href="?" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition text-center flex items-center justify-center">Clear</a>
+            </div>
+        </div>
+    </form>
+
+    <!-- Certificates Directory Table -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse min-w-[650px]">
+            <thead>
+                <tr class="bg-slate-50 border-b border-gray-200 text-slate-600 text-sm font-semibold">
+                    <th class="px-6 py-4">Recipient Name / Reason</th>
+                    <th class="px-6 py-4">Verification Code</th>
+                    <th class="px-6 py-4">Issued On</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 text-sm text-slate-700">
+                {% for cert in certs %}
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="px-6 py-4 font-medium text-slate-900">
+                        <a href="{% url 'certificate_detail' cert.pk %}" class="text-blue-600 hover:underline block font-bold text-base">
+                            {{ cert.recipient_name }}
+                        </a>
+                        {% if cert.project_title %}
+                            <span class="text-xs block text-slate-600 font-bold mt-0.5">Project: {{ cert.project_title }}</span>
+                        {% endif %}
+                        {% if cert.primary_category or cert.secondary_category %}
+                            <div class="flex items-center space-x-1.5 mt-0.5">
+                                {% if cert.primary_category %}
+                                    <span class="bg-slate-100 text-slate-700 text-[10px] px-1.5 py-0.5 rounded font-semibold">{{ cert.primary_category.name }}</span>
+                                {% endif %}
+                                {% if cert.secondary_category %}
+                                    <span class="text-gray-400 text-[10px]">&rarr;</span>
+                                    <span class="bg-blue-50 text-blue-700 text-[10px] px-1.5 py-0.5 rounded font-semibold">{{ cert.secondary_category.name }}</span>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                        <span class="text-xs text-gray-400 font-normal block max-w-md truncate mt-0.5">{{ cert.reason }}</span>
+                        
+                        {% if cert.study_submission %}
+                            <span class="text-xs block text-slate-400 mt-1 font-medium">
+                                Linked Study: 
+                                <a href="{% url 'study_submission_detail' cert.study_submission.pk %}" class="text-blue-600 hover:underline">
+                                    "{{ cert.study_submission.title|truncatechars:40 }}"
+                                </a>
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4">
+                        <a href="{% url 'public_view_certificate' cert.certificate_code %}" target="_blank" class="font-mono bg-slate-100 hover:bg-amber-50 hover:text-amber-800 border border-gray-200 text-slate-800 px-2.5 py-1 rounded text-xs font-bold transition">
+                            {{ cert.certificate_code }}
+                        </a>
+                    </td>
+                    <td class="px-6 py-4 text-gray-500">
+                        {{ cert.issue_date|date:"M d, Y" }}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="px-6 py-10 text-center text-gray-400 italic">
+                        No certificates issued via this portal yet.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

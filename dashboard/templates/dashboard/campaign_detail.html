@@ -1,0 +1,178 @@
+{% extends 'dashboard/base.html' %}
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-6">
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col md:flex-row gap-6">
+        {% if campaign.image %}
+            <div class="w-full md:w-1/3 flex-shrink-0">
+                <img src="{{ campaign.image.url }}" alt="{{ campaign.name }}" class="w-full h-48 object-cover rounded-xl border border-gray-200 shadow-sm">
+            </div>
+        {% endif %}
+        <div class="flex-1 flex flex-col justify-between">
+            <div>
+                <div class="flex justify-between items-start">
+                    <h2 class="text-2xl font-bold text-slate-800">{{ campaign.name }}</h2>
+                    <div class="flex space-x-2">
+                        <a href="javascript:history.back()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium text-xs px-3 py-1.5 rounded border border-gray-200 transition flex items-center">&larr; Back</a>
+                        <a href="{% url 'campaign_edit' campaign.pk %}" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs px-3 py-1.5 rounded border border-gray-200 transition">Edit Details</a>
+                        <a href="{% url 'campaign_delete' campaign.pk %}" onclick="return confirm('Are you sure you want to delete this campaign?');" class="bg-red-50 hover:bg-red-100 text-red-600 font-medium text-xs px-3 py-1.5 rounded border border-red-100 transition">Delete Campaign</a>
+                    </div>
+                </div>
+                
+                {% if campaign.primary_category or campaign.secondary_category %}
+                    <div class="flex items-center space-x-2 mt-2">
+                        {% if campaign.primary_category %}
+                            <span class="bg-slate-100 text-slate-800 text-xs px-2.5 py-1 rounded-md font-semibold">{{ campaign.primary_category.name }}</span>
+                        {% endif %}
+                        {% if campaign.secondary_category %}
+                            <span class="text-gray-400 text-sm">&rarr;</span>
+                            <span class="bg-blue-50 text-blue-800 text-xs px-2.5 py-1 rounded-md font-semibold">{{ campaign.secondary_category.name }}</span>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                <p class="text-gray-600 mt-4">{{ campaign.description }}</p>
+            </div>
+            
+            <div class="mt-6 flex flex-wrap gap-4 items-center text-sm text-slate-500 font-medium border-t border-gray-100 pt-4">
+                <div>
+                    <span class="font-bold text-slate-700">Start:</span> {{ campaign.start_date }}
+                </div>
+                <div>
+                    <span class="font-bold text-slate-700">End:</span> {{ campaign.end_date }}
+                </div>
+                <div>
+                    {% if campaign.is_active %}
+                        <span class="bg-emerald-50 text-emerald-700 border border-emerald-100 px-2.5 py-1 rounded-full text-xs font-semibold">Active</span>
+                    {% else %}
+                        <span class="bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full text-xs font-semibold">Paused</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gallery of Multiple Campaign Images -->
+    {% if campaign.images.all %}
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+            <h3 class="text-md font-bold text-slate-800 mb-4">Campaign Image Gallery</h3>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                {% for img in campaign.images.all %}
+                    <div class="group relative overflow-hidden rounded-xl border border-gray-200 bg-slate-50 shadow-sm aspect-video">
+                        <img src="{{ img.image.url }}" alt="Gallery item" class="w-full h-full object-cover transition duration-300 group-hover:scale-105">
+                        <a href="{{ img.image.url }}" target="_blank" class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-semibold">
+                            Open Image
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="p-4 border-b bg-slate-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+            <div class="flex items-center space-x-3">
+                <span class="font-bold text-slate-800">Participants ({{ page_obj.paginator.count }})</span>
+                {% if page_obj.paginator.count > 0 %}
+                    <a href="{% url 'campaign_export_participants' campaign.pk %}?search_participants={{ search_participants }}" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-sm flex items-center space-x-1">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                        <span>Download CSV</span>
+                    </a>
+                {% endif %}
+            </div>
+            
+            <!-- Inline Search Filter -->
+            <form method="GET" class="w-full sm:w-auto flex items-center gap-2">
+                <div class="relative w-full sm:w-64">
+                    <input type="text" name="search_participants" value="{{ search_participants }}" placeholder="Search participant name or email..." class="w-full pl-3 pr-8 py-1.5 border border-gray-300 rounded-lg outline-none text-xs focus:ring-2 focus:ring-slate-800 bg-white">
+                    {% if search_participants %}
+                        <a href="?" class="absolute right-2.5 top-2.5 text-gray-400 hover:text-slate-600">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </a>
+                    {% endif %}
+                </div>
+                <button type="submit" class="bg-slate-900 text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-slate-800 transition shadow-sm whitespace-nowrap">Search</button>
+            </form>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left min-w-[400px]">
+                <tbody class="divide-y divide-gray-100">
+                    {% for person in participants %}
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-6 py-4">
+                            <a href="{% url 'participant_profile' person.pk %}" class="text-blue-600 font-bold block">
+                                {{ person.name }}
+                            </a>
+                        </td>
+                        <td class="px-6 py-4 text-gray-500 font-mono text-xs break-all">{{ person.phone }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="2" class="px-6 py-8 text-center text-gray-400 italic">No participants registered in this campaign.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination Controls (Sticky at the bottom of viewport, centered) -->
+    {% if page_obj.paginator.num_pages > 1 %}
+        <div class="sticky bottom-4 bg-white/95 backdrop-blur-sm border border-slate-200 p-4 flex flex-col sm:flex-row justify-center items-center gap-4 text-sm z-30 shadow-[0_-4px_24px_rgba(0,0,0,0.06)] rounded-xl mt-6 max-w-max mx-auto">
+            <div class="flex items-center justify-center space-x-2">
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}&search_participants={{ search_participants }}" class="bg-white border border-gray-300 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-gray-50 transition shadow-sm">Previous</a>
+                {% else %}
+                    <span class="bg-gray-100 border border-gray-200 text-gray-400 px-3 py-1.5 rounded-lg text-xs font-semibold cursor-not-allowed">Previous</span>
+                {% endif %}
+                
+                <div class="flex space-x-1">
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <span class="bg-slate-900 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold">{{ num }}</span>
+                        {% elif num > page_obj.number|add:-3 and num < page_obj.number|add:3 %}
+                            <a href="?page={{ num }}&search_participants={{ search_participants }}" class="bg-white border border-gray-300 text-slate-700 px-2.5 py-1.5 rounded-lg text-xs font-medium hover:bg-gray-50 transition">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}&search_participants={{ search_participants }}" class="bg-white border border-gray-300 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-gray-50 transition shadow-sm">Next</a>
+                {% else %}
+                    <span class="bg-gray-100 border border-gray-200 text-gray-400 px-3 py-1.5 rounded-lg text-xs font-semibold cursor-not-allowed">Next</span>
+                {% endif %}
+            </div>
+
+            <!-- Jump to Page Element -->
+            <div class="flex items-center justify-center space-x-2">
+                <button id="btn-toggle-jump" onclick="toggleJumpInput()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg border border-gray-200 transition font-semibold">Jump to Page</button>
+                <div id="jump-to-page-container" class="hidden items-center space-x-1">
+                    <input type="number" id="jump-page-input" min="1" max="{{ page_obj.paginator.num_pages }}" placeholder="Page #" class="w-16 px-2.5 py-1.5 border border-gray-300 rounded-lg text-xs outline-none focus:ring-1 focus:ring-slate-900">
+                    <button onclick="submitJumpPage()" class="bg-slate-900 text-white px-2.5 py-1.5 rounded-lg text-xs font-semibold hover:bg-slate-800 transition">Go</button>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    function toggleJumpInput() {
+        const container = document.getElementById('jump-to-page-container');
+        container.classList.toggle('hidden');
+        container.classList.toggle('flex');
+    }
+
+    function submitJumpPage() {
+        const pageInput = document.getElementById('jump-page-input').value;
+        if (pageInput) {
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('page', pageInput);
+            window.location.search = urlParams.toString();
+        }
+    }
+</script>
+{% endblock %}

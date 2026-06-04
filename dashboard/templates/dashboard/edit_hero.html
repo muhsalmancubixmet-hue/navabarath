@@ -1,0 +1,100 @@
+{% extends 'dashboard/base.html' %}
+
+{% block page_title %}
+    {% if title %}{{ title }}{% else %}Edit Hero Section{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto bg-white p-4 sm:p-8 rounded-xl shadow-sm border border-gray-200">
+    <p class="text-sm text-gray-500 mb-6">{% if subtitle %}{{ subtitle }}{% else %}Please fill in the details below.{% endif %}</p>
+    
+    <form method="POST" enctype="multipart/form-data" class="space-y-6">
+        {% csrf_token %}
+        
+        {% for field in form %}
+            {% if field.field.widget.input_type == 'checkbox' %}
+                <!-- Modern Checkbox Style -->
+                <div class="flex items-center space-x-3 pt-2">
+                    {{ field }}
+                    <label class="text-sm font-semibold text-slate-700 capitalize cursor-pointer" for="{{ field.id_for_label }}">
+                        {{ field.label }}
+                    </label>
+                    {% if field.help_text %}
+                        <p class="text-xs text-gray-400 block mt-1">{{ field.help_text }}</p>
+                    {% endif %}
+                    {% if field.errors %}
+                        <p class="text-xs text-red-500 block mt-1">{{ field.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            {% elif field.field.widget.input_type == 'file' %}
+                <!-- Modern Custom File Upload Zone -->
+                <div class="flex flex-col space-y-2">
+                    <label class="text-sm font-semibold text-slate-700 capitalize">{{ field.label }}</label>
+                    <div class="border-2 border-dashed border-slate-200 rounded-xl p-4 sm:p-8 flex flex-col items-center justify-center hover:border-slate-400 transition cursor-pointer relative bg-slate-50">
+                        <input type="file" name="{{ field.name }}" id="{{ field.id_for_label }}" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                        <div class="text-center pointer-events-none">
+                            <svg class="mx-auto h-12 w-12 text-slate-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                            </svg>
+                            <span class="text-sm text-slate-600 font-semibold block">Click to upload or drag & drop</span>
+                            <span class="text-xs text-gray-400 block mt-1" id="file-name-{{ field.id_for_label }}">No file chosen</span>
+                        </div>
+                    </div>
+                    {% if field.help_text %}
+                        <p class="text-xs text-gray-400">{{ field.help_text }}</p>
+                    {% endif %}
+                    {% if field.errors %}
+                        <p class="text-xs text-red-500">{{ field.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            {% else %}
+                <!-- Standard Inputs (Text, Date, Select, Textarea) -->
+                <div class="flex flex-col space-y-2">
+                    <label class="text-sm font-semibold text-slate-700 capitalize">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}
+                        <p class="text-xs text-gray-400">{{ field.help_text }}</p>
+                    {% endif %}
+                    {% if field.errors %}
+                        <p class="text-xs text-red-500">{{ field.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% endfor %}
+
+        <div class="pt-4 border-t border-gray-100 flex justify-between items-center">
+            <a href="javascript:history.back()" class="bg-gray-100 text-gray-700 px-6 py-2.5 rounded-lg font-medium hover:bg-gray-200 transition duration-200">
+                &larr; Back
+            </a>
+            <button type="submit" class="bg-slate-900 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-slate-800 transition duration-200 shadow-sm">
+                {% if button_text %}{{ button_text }}{% else %}Save Layout Changes{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Style text, select, date, and textarea inputs
+    document.querySelectorAll('input:not([type="file"]):not([type="checkbox"]):not([type="hidden"]), textarea, select').forEach(el => {
+        el.classList.add('w-full', 'px-4', 'py-2.5', 'border', 'border-slate-200', 'rounded-lg', 'focus:ring-2', 'focus:ring-slate-900', 'focus:border-slate-900', 'outline-none', 'transition', 'duration-200', 'bg-slate-50', 'placeholder-slate-400', 'text-slate-800', 'text-sm');
+    });
+
+    // Style checkboxes
+    document.querySelectorAll('input[type="checkbox"]').forEach(el => {
+        el.classList.add('w-5', 'h-5', 'border', 'border-slate-300', 'rounded', 'text-slate-900', 'focus:ring-slate-900', 'transition', 'duration-200', 'cursor-pointer');
+    });
+
+    // Track chosen file name dynamically
+    document.querySelectorAll('input[type="file"]').forEach(input => {
+        input.addEventListener('change', (e) => {
+            const fileName = e.target.files[0]?.name || 'No file chosen';
+            const labelEl = document.getElementById('file-name-' + e.target.id);
+            if (labelEl) {
+                labelEl.textContent = fileName;
+                labelEl.classList.remove('text-gray-400');
+                labelEl.classList.add('text-slate-800', 'font-semibold');
+            }
+        });
+    });
+</script>
+{% endblock %}

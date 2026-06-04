@@ -1,0 +1,213 @@
+{% extends 'dashboard/base.html' %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<!-- International Phone Input Assets -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@23.0.4/build/css/intlTelInput.css">
+<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@23.0.4/build/js/intlTelInput.min.js"></script>
+<style>
+    .iti {
+        width: 100% !important;
+    }
+</style>
+
+<div class="max-w-3xl mx-auto bg-white p-4 sm:p-8 rounded-xl shadow-sm border border-gray-200">
+    <p class="text-sm text-gray-500 mb-6">{% if subtitle %}{{ subtitle }}{% else %}Please fill in the project details below.{% endif %}</p>
+    
+    <form method="POST" enctype="multipart/form-data" class="space-y-6">
+        {% csrf_token %}
+        
+        <!-- Candidate Name -->
+        <div class="flex flex-col space-y-2">
+            <label class="text-sm font-semibold text-slate-700 capitalize" for="{{ form.recipient_name.id_for_label }}">Candidate Name</label>
+            {{ form.recipient_name }}
+            {% if form.recipient_name.errors %}
+                <p class="text-xs text-red-500">{{ form.recipient_name.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Contact details -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex flex-col space-y-2">
+                <label class="text-sm font-semibold text-slate-700 capitalize" for="{{ form.recipient_email.id_for_label }}">Email Address</label>
+                {{ form.recipient_email }}
+                {% if form.recipient_email.errors %}
+                    <p class="text-xs text-red-500">{{ form.recipient_email.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div class="flex flex-col space-y-2">
+                <label class="text-sm font-semibold text-slate-700 capitalize" for="{{ form.recipient_phone.id_for_label }}">Phone Number</label>
+                {{ form.recipient_phone }}
+                {% if form.recipient_phone.errors %}
+                    <p class="text-xs text-red-500">{{ form.recipient_phone.errors.0 }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Project Title -->
+        <div class="flex flex-col space-y-2">
+            <label class="text-sm font-semibold text-slate-700 capitalize" for="{{ form.project_title.id_for_label }}">Project Title</label>
+            {{ form.project_title }}
+            {% if form.project_title.errors %}
+                <p class="text-xs text-red-500">{{ form.project_title.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Primary & Secondary Categories (Dependent Selection) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex flex-col space-y-2">
+                <label class="text-sm font-semibold text-slate-700 capitalize" for="{{ form.primary_category.id_for_label }}">Primary Category</label>
+                {{ form.primary_category }}
+                {% if form.primary_category.errors %}
+                    <p class="text-xs text-red-500">{{ form.primary_category.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div class="flex flex-col space-y-2">
+                <label class="text-sm font-semibold text-slate-700 capitalize" for="{{ form.secondary_category.id_for_label }}">Secondary Category</label>
+                {{ form.secondary_category }}
+                {% if form.secondary_category.errors %}
+                    <p class="text-xs text-red-500">{{ form.secondary_category.errors.0 }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Study File Upload -->
+        <div class="flex flex-col space-y-2">
+            <label class="text-sm font-semibold text-slate-700 capitalize">Upload Study File (PDF / Document)</label>
+            <div class="border-2 border-dashed border-slate-200 rounded-xl p-4 sm:p-8 flex flex-col items-center justify-center hover:border-slate-400 transition cursor-pointer relative bg-slate-50">
+                <input type="file" name="study_file" id="id_study_file" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                <div class="text-center pointer-events-none">
+                    <svg class="mx-auto h-12 w-12 text-slate-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                    </svg>
+                    <span class="text-sm text-slate-600 font-semibold block">Click to upload or drag & drop</span>
+                    <span class="text-xs text-gray-400 block mt-1" id="file-name-id_study_file">
+                        {% if cert.study_file %}{{ cert.study_file.name }}{% else %}No file chosen{% endif %}
+                    </span>
+                </div>
+            </div>
+            {% if form.study_file.errors %}
+                <p class="text-xs text-red-500">{{ form.study_file.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Project Description / Reason -->
+        <div class="flex flex-col space-y-2">
+            <label class="text-sm font-semibold text-slate-700 capitalize" for="{{ form.reason.id_for_label }}">Project Description / Reason</label>
+            {{ form.reason }}
+            {% if form.reason.errors %}
+                <p class="text-xs text-red-500">{{ form.reason.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Save Button -->
+        <div class="pt-6 border-t border-gray-100 flex justify-between items-center">
+            <a href="javascript:history.back()" class="bg-gray-100 text-gray-700 px-6 py-2.5 rounded-lg font-medium hover:bg-gray-200 transition duration-200">
+                &larr; Back
+            </a>
+            <button type="submit" class="bg-slate-900 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-slate-800 transition duration-200 shadow-sm">
+                {% if button_text %}{{ button_text }}{% else %}Save Project{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+
+<script id="category-tree-data" type="application/json">
+{
+    {% for primary in primary_categories %}
+        "{{ primary.id }}": [
+            {% for sub in primary.subcategories.all %}
+                {"id": "{{ sub.id }}", "name": "{{ sub.name|escapejs }}"}{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ]{% if not forloop.last %},{% endif %}
+    {% endfor %}
+}
+</script>
+
+<script>
+    // Subcategories payload grouped by parent ID
+    const categoryTree = JSON.parse(document.getElementById('category-tree-data').textContent);
+
+    const primarySelect = document.getElementById('id_primary_category');
+    const secondarySelect = document.getElementById('id_secondary_category');
+    
+    // Remember initial secondary selection when page loads (e.g. for Edit view)
+    const initialSecondaryValue = "{{ form.instance.secondary_category.id|default:'' }}";
+
+    function updateSecondaryDropdown() {
+        const selectedPrimaryId = primarySelect.value;
+        
+        // Save currently selected subcategory value
+        const currentSelected = secondarySelect.value || initialSecondaryValue;
+
+        // Clear existing options, leaving a placeholder
+        secondarySelect.innerHTML = '<option value="">Select Secondary Category</option>';
+
+        if (selectedPrimaryId && categoryTree[selectedPrimaryId]) {
+            const optionsList = categoryTree[selectedPrimaryId];
+            optionsList.forEach(opt => {
+                const element = document.createElement('option');
+                element.value = opt.id;
+                element.textContent = opt.name;
+                if (opt.id === currentSelected) {
+                    element.selected = true;
+                }
+                secondarySelect.appendChild(element);
+            });
+            secondarySelect.disabled = false;
+        } else {
+            secondarySelect.disabled = true;
+        }
+    }
+
+    if (primarySelect && secondarySelect) {
+        primarySelect.addEventListener('change', updateSecondaryDropdown);
+        // Execute on load to populate if editing
+        updateSecondaryDropdown();
+    }
+</script>
+
+<script>
+    // Apply styling matching core admin design system
+    document.querySelectorAll('input:not([type="file"]):not([type="checkbox"]):not([type="hidden"]), textarea, select').forEach(el => {
+        el.classList.add('w-full', 'px-4', 'py-2.5', 'border', 'border-slate-200', 'rounded-lg', 'focus:ring-2', 'focus:ring-slate-900', 'focus:border-slate-900', 'outline-none', 'transition', 'duration-200', 'bg-slate-50', 'placeholder-slate-400', 'text-slate-800', 'text-sm');
+    });
+
+    // Initialize international phone input with country search option
+    const phoneInput = document.getElementById('id_recipient_phone');
+    if (phoneInput) {
+        const iti = window.intlTelInput(phoneInput, {
+            initialCountry: "in",
+            countrySearch: true,
+            utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@23.0.4/build/js/utils.js",
+        });
+
+        // Store full E.164 number on form submit
+        const form = phoneInput.closest('form');
+        if (form) {
+            form.addEventListener('submit', function() {
+                if (phoneInput.value.trim()) {
+                    phoneInput.value = iti.getNumber();
+                }
+            });
+        }
+    }
+
+    // File name display updater
+    const fileInput = document.getElementById('id_study_file');
+    if (fileInput) {
+        fileInput.addEventListener('change', (e) => {
+            const fileName = e.target.files[0]?.name || 'No file chosen';
+            const displayEl = document.getElementById('file-name-id_study_file');
+            if (displayEl) {
+                displayEl.textContent = fileName;
+                displayEl.classList.remove('text-gray-400');
+                displayEl.classList.add('text-slate-800', 'font-semibold');
+            }
+        });
+    }
+</script>
+{% endblock %}

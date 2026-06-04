@@ -1,0 +1,86 @@
+{% extends 'dashboard/base.html' %}
+
+{% block page_title %}Submission Review{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+
+    <!-- Header Navigation Back -->
+    <div class="flex justify-between items-center">
+        <a href="{% url 'certificate_list' %}?tab=submissions" class="flex items-center space-x-2 text-sm text-slate-500 hover:text-slate-800 transition font-medium">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            <span>Back to Submissions</span>
+        </a>
+    </div>
+
+    <!-- Details Card -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 space-y-6">
+        
+        <!-- Top Metadata Row -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-between items-start border-b border-slate-100 pb-4">
+            <div class="space-y-1">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Submitted By</span>
+                <h2 class="text-xl font-bold text-slate-800">{{ submission.student_name }}</h2>
+                <div class="text-sm font-mono text-slate-500 break-all">{{ submission.email }}</div>
+            </div>
+            <div class="text-left sm:text-right space-y-1">
+                <span class="block text-xs font-bold text-slate-400 uppercase tracking-widest">Status</span>
+                {% if submission.status == 'PENDING' %}
+                    <span class="inline-block bg-amber-50 text-amber-700 border border-amber-100 px-3 py-1 rounded-full text-xs font-bold">Pending Review</span>
+                {% elif submission.status == 'APPROVED' %}
+                    <span class="inline-block bg-emerald-50 text-emerald-700 border border-emerald-100 px-3 py-1 rounded-full text-xs font-bold">Approved</span>
+                {% else %}
+                    <span class="inline-block bg-red-50 text-red-700 border border-red-100 px-3 py-1 rounded-full text-xs font-bold">Rejected</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Submission Content -->
+        <div class="space-y-4">
+            <div>
+                <span class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Study Title</span>
+                <h3 class="text-lg font-bold text-slate-800 leading-snug">{{ submission.title }}</h3>
+            </div>
+
+            <div>
+                <span class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Study Content / Details</span>
+                <div class="bg-slate-50 p-6 rounded-xl border border-slate-200 text-slate-700 text-sm leading-relaxed whitespace-pre-line shadow-inner">
+                    {{ submission.content }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Controls -->
+        <div class="border-t border-slate-100 pt-6 flex flex-col sm:flex-row gap-4 justify-between items-stretch sm:items-center">
+            <div class="text-xs text-slate-400 font-medium">
+                Submitted on {{ submission.submitted_at|date:"F d, Y \a\t H:i" }}
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-3">
+                {% if submission.status == 'PENDING' %}
+                    <a href="{% url 'study_submission_reject' submission.pk %}" onclick="return confirm('Are you sure you want to reject this submission?');" class="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 px-5 py-2.5 rounded-lg text-sm font-semibold transition text-center w-full sm:w-auto">
+                        Reject Study
+                    </a>
+                    <a href="{% url 'study_submission_approve' submission.pk %}" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-lg text-sm font-semibold shadow transition text-center w-full sm:w-auto">
+                        Approve & Issue Certificate
+                    </a>
+                {% elif submission.status == 'APPROVED' %}
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+                        <span class="text-sm text-slate-500 font-medium text-left sm:text-right">Certificate Generated:</span>
+                        <span class="font-mono font-bold bg-amber-50 border border-amber-100 text-amber-800 px-2.5 py-1 rounded text-xs text-center">
+                            {{ submission.certificate.certificate_code }}
+                        </span>
+                        <a href="{% url 'public_view_certificate' submission.certificate.certificate_code %}" target="_blank" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg text-xs font-bold transition shadow-sm text-center">
+                            View Certificate
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

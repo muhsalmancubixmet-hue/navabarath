@@ -1,0 +1,50 @@
+{% extends 'dashboard/base.html' %}
+
+{% block page_title %}System Activity Logs{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div class="px-6 py-4 bg-slate-900 border-b border-gray-200 flex justify-between items-center">
+        <h3 class="text-lg font-bold text-white">Admin Audit Trail</h3>
+        <span class="text-xs bg-emerald-500 text-white px-2.5 py-1 rounded-full font-medium tracking-wide">Live Tracking</span>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse min-w-[500px]">
+            <thead>
+                <tr class="bg-slate-50 border-b border-gray-200 text-slate-600 text-sm font-semibold">
+                    <th class="px-6 py-4">User Admin</th>
+                    <th class="px-6 py-4">Action Performed</th>
+                    <th class="px-6 py-4">Timestamp</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 text-sm text-slate-700">
+                {% for log in logs %}
+                <tr class="hover:bg-slate-50 transition duration-150">
+                    <td class="px-6 py-4 font-medium text-slate-900 flex items-center space-x-2">
+                        <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-700 font-bold uppercase text-xs">
+                            {{ log.user.username|slice:":2" }}
+                        </div>
+                        <span>{{ log.user.username }}</span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="bg-blue-50 text-blue-700 px-3 py-1 rounded-md text-xs font-medium border border-blue-100">
+                            {{ log.action }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-gray-500">
+                        {{ log.timestamp|date:"M d, Y - H:i" }}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="px-6 py-10 text-center text-gray-400 italic">
+                        No recent administrator activities logged yet.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

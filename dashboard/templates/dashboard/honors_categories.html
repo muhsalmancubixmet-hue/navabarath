@@ -1,0 +1,111 @@
+{% extends 'dashboard/base.html' %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Add Primary Category Form -->
+    <div class="lg:col-span-1 space-y-6">
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+            <h3 class="text-md font-bold text-slate-800 mb-2">Create Primary Honors Category</h3>
+            <p class="text-xs text-gray-500 mb-4">Examples: Research, Leadership, Community, Technical</p>
+            
+            <form method="POST" class="space-y-4">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_primary">
+                <div>
+                    <label class="text-xs font-semibold text-slate-700 block mb-1">Primary Category Name</label>
+                    <input type="text" name="name" required placeholder="Enter honors category name..." class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-900 outline-none text-sm bg-slate-50">
+                </div>
+                <button type="submit" class="w-full bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800 transition shadow-sm">
+                    + Add Primary Category
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Category Hierarchy List & Secondary Adders -->
+    <div class="lg:col-span-2 space-y-6">
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+            <h3 class="text-md font-bold text-slate-800 mb-1">Honors Category Hierarchy</h3>
+            <p class="text-xs text-gray-500 mb-6">Manage primary groupings and add secondary honors sub-categories underneath them.</p>
+
+            <div class="space-y-6">
+                {% for primary in primary_categories %}
+                    <div class="border border-slate-100 rounded-xl p-5 bg-slate-50/50 space-y-4">
+                        <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                            <span class="text-sm font-bold text-slate-800 flex items-center">
+                                <span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block mr-2"></span>
+                                {{ primary.name }}
+                            </span>
+                            <span class="text-[10px] bg-slate-200 text-slate-600 font-semibold px-2 py-0.5 rounded-full">Primary</span>
+                        </div>
+
+                        <!-- Linked Honors Projects (Primary) -->
+                        <div class="text-xs text-slate-600 bg-white p-3 rounded-lg border border-slate-100">
+                            <span class="font-bold text-slate-700 block mb-1">Honors Projects (Primary Category):</span>
+                            <div class="space-y-1">
+                                {% for cert in primary.primary_certificates.all %}
+                                    <div class="flex items-center justify-between">
+                                        <a href="{% url 'certificate_detail' cert.pk %}" class="text-blue-600 hover:underline font-medium">{{ cert.recipient_name }}{% if cert.project_title %} - {{ cert.project_title }}{% endif %}</a>
+                                        <span class="text-[10px] text-gray-400 font-semibold">{{ cert.issue_date|date:"Y-m-d" }}</span>
+                                    </div>
+                                {% empty %}
+                                    <span class="text-slate-400 italic">No honors projects linked as primary.</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Secondary Categories & Linked Projects -->
+                        <div class="space-y-3">
+                            <span class="text-xs font-semibold text-slate-500 block mb-1">Secondary Categories & Linked Projects:</span>
+                            {% for sub in primary.subcategories.all %}
+                                <div class="bg-white p-3 rounded-lg border border-slate-100/80">
+                                    <div class="flex justify-between items-center mb-1.5">
+                                        <span class="bg-amber-50 text-amber-800 text-xs px-2 py-0.5 rounded-full font-bold border border-amber-100">
+                                            {{ sub.name }}
+                                        </span>
+                                    </div>
+                                    <div class="pl-2 border-l border-slate-100 space-y-1">
+                                        {% for cert in sub.secondary_certificates.all %}
+                                            <div class="flex items-center justify-between text-xs">
+                                                <a href="{% url 'certificate_detail' cert.pk %}" class="text-blue-600 hover:underline font-medium">{{ cert.recipient_name }}{% if cert.project_title %} - {{ cert.project_title }}{% endif %}</a>
+                                                <span class="text-[9px] text-gray-400">{{ cert.issue_date|date:"Y-m-d" }}</span>
+                                            </div>
+                                        {% empty %}
+                                            <span class="text-[10px] text-slate-400 italic">No honors projects linked.</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <span class="text-xs text-slate-400 italic block">No secondary categories added yet.</span>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Quick Add Secondary Form -->
+                        <div class="pt-2 border-t border-slate-100/80">
+                            <form method="POST" class="flex items-center gap-2">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="add_secondary">
+                                <input type="hidden" name="parent_id" value="{{ primary.id }}">
+                                <input type="text" name="name" required placeholder="New secondary under {{ primary.name }}..." class="flex-1 px-3 py-1.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-900 outline-none text-xs bg-white">
+                                <button type="submit" class="bg-slate-900 text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-slate-800 transition">
+                                    + Add
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="text-center py-12 text-slate-400 border border-dashed border-slate-200 rounded-xl bg-slate-50">
+                        <svg class="mx-auto h-12 w-12 text-slate-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                        </svg>
+                        <p class="text-sm font-semibold">No honors categories found</p>
+                        <p class="text-xs text-gray-400 mt-1">Start by creating a primary honors category in the left panel.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

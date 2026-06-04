@@ -1,0 +1,46 @@
+{% extends 'dashboard/base.html' %}
+
+{% block page_title %}Manage Testimonials{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-6">
+    
+    <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+        <div>
+            <h3 class="text-lg font-bold text-slate-800">Client Reviews</h3>
+            <p class="text-sm text-gray-500">Add, view, or manage student/professional feedback appearing on the landing page.</p>
+        </div>
+        <a href="{% url 'testimonial_add' %}" class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800 transition shadow-sm">
+            + Add Testimonial
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for item in testimonials %}
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col justify-between space-y-4">
+                <p class="text-slate-600 italic text-sm">
+                    "{{ item.feedback }}"
+                </p>
+                
+                <div class="flex items-center space-x-3 pt-2 border-t border-gray-100">
+                    {% if item.image %}
+                        <img src="{{ item.image.url }}" alt="{{ item.client_name }}" class="w-10 h-10 rounded-full object-cover border border-slate-200">
+                    {% else %}
+                        <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-sm border border-slate-200">
+                            {{ item.client_name|slice:":1" }}
+                        </div>
+                    {% endif %}
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-900">{{ item.client_name }}</h4>
+                        <p class="text-xs text-gray-400">{{ item.client_designation }}</p>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-span-full bg-white p-12 text-center rounded-xl border border-gray-200 shadow-sm text-gray-400 italic">
+                No testimonials added yet. Click "+ Add Testimonial" to create your first one!
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

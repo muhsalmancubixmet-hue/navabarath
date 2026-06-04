@@ -1,0 +1,104 @@
+{% extends 'dashboard/base.html' %}
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-6">
+    
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+        <div>
+            <h3 class="text-lg font-bold text-slate-800">Campaign Analytics</h3>
+            <p class="text-sm text-gray-500">Search drives and monitor participant conversion ratios.</p>
+        </div>
+        <a href="{% url 'campaign_add' %}" class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800 transition shadow-sm w-full sm:w-auto text-center">+ Create Campaign</a>
+    </div>
+
+    <form method="GET" class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col lg:flex-row gap-4 items-center justify-between">
+        <div class="w-full lg:w-1/3 relative">
+            <input type="text" name="search" value="{{ search_query }}" placeholder="Search campaign name or keyword..." class="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-slate-800 text-sm">
+        </div>
+        
+        <div class="flex flex-wrap sm:flex-nowrap gap-3 w-full lg:w-auto justify-end">
+            <select name="primary_category" class="px-3 py-2 border border-gray-300 rounded-lg bg-white outline-none focus:ring-2 focus:ring-slate-800 text-xs w-full sm:w-auto">
+                <option value="">All Primary Categories</option>
+                {% for cat in primary_categories %}
+                    <option value="{{ cat.id }}" {% if primary_filter == cat.id|stringformat:"i" %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+            
+            <select name="secondary_category" class="px-3 py-2 border border-gray-300 rounded-lg bg-white outline-none focus:ring-2 focus:ring-slate-800 text-xs w-full sm:w-auto">
+                <option value="">All Secondary Categories</option>
+                {% for cat in secondary_categories %}
+                    <option value="{{ cat.id }}" {% if secondary_filter == cat.id|stringformat:"i" %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+
+            <select name="status" class="px-3 py-2 border border-gray-300 rounded-lg bg-white outline-none focus:ring-2 focus:ring-slate-800 text-xs w-full sm:w-auto">
+                <option value="">All Status</option>
+                <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+                <option value="paused" {% if status_filter == 'paused' %}selected{% endif %}>Paused</option>
+            </select>
+            <div class="flex space-x-2 w-full sm:w-auto justify-end">
+                <button type="submit" class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800 transition w-full sm:w-auto">Apply</button>
+                <a href="{% url 'campaign_list' %}" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition w-full sm:w-auto text-center flex items-center justify-center">Clear</a>
+            </div>
+        </div>
+    </form>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse min-w-[500px]">
+            <thead>
+                <tr class="bg-slate-50 border-b border-gray-200 text-slate-600 text-sm font-semibold">
+                    <th class="px-6 py-4">Campaign Name & Categories</th>
+                    <th class="px-6 py-4">Duration</th>
+                    <th class="px-6 py-4">Status</th>
+                    <th class="px-6 py-4 text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 text-sm text-slate-700">
+                {% for campaign in campaigns %}
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="px-6 py-4 font-medium text-slate-900 flex items-center space-x-3">
+                        {% if campaign.image %}
+                            <img src="{{ campaign.image.url }}" alt="{{ campaign.name }}" class="w-12 h-12 object-cover rounded-lg border border-gray-200 flex-shrink-0">
+                        {% else %}
+                            <div class="w-12 h-12 bg-slate-100 border border-gray-200 rounded-lg flex items-center justify-center text-slate-400 font-bold text-xs uppercase flex-shrink-0">
+                                No Img
+                            </div>
+                        {% endif %}
+                        <div>
+                            <a href="{% url 'campaign_detail' campaign.pk %}" class="text-blue-600 hover:underline font-bold block">{{ campaign.name }}</a>
+                            <span class="text-xs text-gray-400 font-normal block max-w-md truncate">{{ campaign.description }}</span>
+                            {% if campaign.primary_category or campaign.secondary_category %}
+                                <div class="flex items-center space-x-1 mt-1">
+                                    {% if campaign.primary_category %}
+                                        <span class="bg-slate-100 text-slate-800 text-[10px] px-1.5 py-0.5 rounded font-medium">{{ campaign.primary_category.name }}</span>
+                                    {% endif %}
+                                    {% if campaign.secondary_category %}
+                                        <span class="text-gray-400 text-[10px]">&rarr;</span>
+                                        <span class="bg-blue-50 text-blue-800 text-[10px] px-1.5 py-0.5 rounded font-medium">{{ campaign.secondary_category.name }}</span>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-gray-500 font-medium whitespace-nowrap">{{ campaign.start_date }} - {{ campaign.end_date }}</td>
+                    <td class="px-6 py-4">
+                        {% if campaign.is_active %}
+                            <span class="bg-emerald-50 text-emerald-700 border border-emerald-100 px-2.5 py-1 rounded-full text-xs font-semibold">Active</span>
+                        {% else %}
+                            <span class="bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full text-xs font-semibold">Paused</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-right whitespace-nowrap">
+                        <a href="{% url 'campaign_edit' campaign.pk %}" class="text-slate-600 hover:text-slate-900 font-semibold text-xs border border-gray-200 hover:border-gray-300 rounded px-2.5 py-1 transition mr-2 bg-white inline-block">Edit</a>
+                        <a href="{% url 'campaign_delete' campaign.pk %}" onclick="return confirm('Are you sure you want to delete this campaign?');" class="text-red-600 hover:text-red-900 font-semibold text-xs border border-red-100 hover:border-red-200 rounded px-2.5 py-1 transition bg-white inline-block">Delete</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="px-6 py-10 text-center text-gray-400 italic">No campaigns matched your preferences.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
