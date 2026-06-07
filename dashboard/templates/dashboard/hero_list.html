@@ -6,12 +6,12 @@
 <div class="max-w-6xl mx-auto space-y-6">
     
     <!-- Top Header Banner -->
-    <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-4 rounded-xl shadow-sm border border-gray-200 gap-4">
         <div>
             <h3 class="text-lg font-bold text-slate-800">Landing Page Hero Sections</h3>
             <p class="text-sm text-gray-500">Manage, sort, and publish key headers and visuals for the public page.</p>
         </div>
-        <a href="{% url 'hero_create' %}" class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800 transition shadow-sm">
+        <a href="{% url 'hero_create' %}" class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800 transition shadow-sm w-full sm:w-auto text-center">
             + Create Hero Section
         </a>
     </div>
