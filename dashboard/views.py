@@ -176,7 +176,7 @@ def activity_logs(request):
 @login_required
 @staff_permission_required('has_content_info')
 def testimonial_list(request):
-    testimonials = Testimonial.objects.all()
+    testimonials = Testimonial.objects.all().order_by('order')
     return render(request, 'dashboard/testimonials.html', {'testimonials': testimonials})
 
 
@@ -188,6 +188,7 @@ def testimonial_add(request):
         if form.is_valid():
             testimonial = form.save()
             log_activity(request.user, f"Added testimonial for client: {testimonial.client_name}")
+            messages.success(request, f"Testimonial for '{testimonial.client_name}' was successfully created!")
             return redirect('testimonial_list')
     else:
         form = TestimonialForm()
@@ -197,6 +198,65 @@ def testimonial_add(request):
         'subtitle': 'Publish a new client testimonial or quote onto the public showcase section.',
         'button_text': 'Publish Testimonial'
     })
+
+
+@login_required
+@staff_permission_required('has_content_info')
+def testimonial_detail(request, pk):
+    testimonial = get_object_or_404(Testimonial, pk=pk)
+    return render(request, 'dashboard/testimonial_detail.html', {'testimonial': testimonial})
+
+
+@login_required
+@staff_permission_required('has_content_info')
+def testimonial_edit(request, pk):
+    testimonial = get_object_or_404(Testimonial, pk=pk)
+    if request.method == "POST":
+        form = TestimonialForm(request.POST, request.FILES, instance=testimonial)
+        if form.is_valid():
+            testimonial = form.save()
+            log_activity(request.user, f"Updated testimonial details for client: {testimonial.client_name}")
+            messages.success(request, f"Testimonial for '{testimonial.client_name}' was successfully updated!")
+            return redirect('testimonial_detail', pk=testimonial.pk)
+    else:
+        form = TestimonialForm(instance=testimonial)
+    return render(request, 'dashboard/edit_hero.html', {
+        'form': form, 
+        'title': 'Edit Testimonial',
+        'subtitle': 'Modify this client testimonial, quote, or profile image.',
+        'button_text': 'Save Testimonial'
+    })
+
+
+@login_required
+@staff_permission_required('has_content_info')
+def testimonial_delete(request, pk):
+    testimonial = get_object_or_404(Testimonial, pk=pk)
+    name = testimonial.client_name
+    testimonial.delete()
+    log_activity(request.user, f"Deleted testimonial for client: {name}")
+    messages.warning(request, f"Testimonial for '{name}' was successfully deleted.")
+    return redirect('testimonial_list')
+
+
+@login_required
+@staff_permission_required('has_content_info')
+def testimonial_reorder(request):
+    import json
+    from django.http import JsonResponse
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            order_list = data.get('order', [])
+            for item in order_list:
+                t_id = item.get('id')
+                new_order = item.get('order')
+                Testimonial.objects.filter(id=t_id).update(order=new_order)
+            log_activity(request.user, "Reordered landing page Testimonials")
+            return JsonResponse({'status': 'success'}, status=200)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Only POST method is allowed.'}, status=405)
 
 
 @login_required

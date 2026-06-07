@@ -27,9 +27,21 @@ class Testimonial(models.Model):
     feedback = models.TextField()
     client_designation = models.CharField(max_length=100)
     image = models.ImageField(upload_to='testimonials/', null=True, blank=True)
+    order = models.PositiveIntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['order']
 
     def __str__(self):
         return self.client_name
+
+    def save(self, *args, **kwargs):
+        if not self.id and not self.order:
+            from django.db.models import Max
+            max_order = Testimonial.objects.aggregate(Max('order'))['order__max']
+            self.order = (max_order or 0) + 1
+        super().save(*args, **kwargs)
 
 
 class Participant(models.Model):
